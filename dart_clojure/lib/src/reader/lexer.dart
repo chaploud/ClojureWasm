@@ -2,7 +2,18 @@
 
 import 'token.dart';
 
+const preferInline = pragma("vm:prefer-inline");
 const EOF = '\x00'; // ソースコードの終端を示す特殊文字
+const ZERO = 48;
+const ONE = 49;
+const SEVEN = 55;
+const NINE = 57;
+const A_UP = 65;
+const F_UP = 70;
+const Z_UP = 90;
+const A_LOW = 97;
+const F_LOW = 102;
+const Z_LOW = 122;
 
 class Lexer {
   final String _source;
@@ -63,23 +74,38 @@ class Lexer {
     return true;
   }
 
-  // 0-9かどうかを
-  bool _isDigit(String c) => c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
-
-  bool _isHexDigit(String c) {
-    return _isDigit(c) ||
-        (c.compareTo('a') >= 0 && c.compareTo('f') <= 0) ||
-        (c.compareTo('A') >= 0 && c.compareTo('F') <= 0);
+  // inline推奨
+  @preferInline
+  bool _between(String str, int start, int end) {
+    if (str.isEmpty) return false; // 空文字チェック
+    final code = str.codeUnitAt(0);
+    return code >= start && code <= end;
   }
 
+  /// 0-9かどうか(10進数)
+  bool _isDigit(String c) {
+    return _between(c, ZERO, NINE);
+  }
+
+  /// 0-1かどうか(2進数)
+  bool _isBinaryDigit(String c) {
+    return _between(c, ZERO, ONE);
+  }
+
+  /// 0-7かどうか(8進数)
   bool _isOctalDigit(String c) {
-    return c.compareTo('0') >= 0 && c.compareTo('7') <= 0;
+    return _between(c, ZERO, SEVEN);
+  }
+
+  /// 0-9, a-f, A-Fかどうか(16進数)
+  bool _isHexDigit(String c) {
+    return _between(c, ZERO, NINE) ||
+        _between(c, A_LOW, F_LOW) ||
+        _between(c, A_UP, F_UP);
   }
 
   bool _isAlpha(String c) {
-    return (c.compareTo('a') >= 0 && c.compareTo('z') <= 0) ||
-        (c.compareTo('A') >= 0 && c.compareTo('Z') <= 0) ||
-        c == '_'; // アンダースコアは識別子の一部として許可
+    return _between(c, A_LOW, F_LOW) || _between(c, A_UP, F_UP);
   }
 
   // トークン判別ロジック
@@ -110,18 +136,6 @@ class Lexer {
         } else {
           _addToken(TokenType.unquote);
         }
-      case '#':
-        // Clojureのディスパッチマクロは多様
-        // #_ (ignore next form)
-        // #{ (set)
-        // #" (regex)
-        // #' (var)
-        // #( (fn literal)
-        // etc.
-        // ここでは TokenType.dispatch として登録し、パーサーで詳細を判断
-        // もしくは、ここで一部を判別しても良い (例: #_ はコメント扱いもできる)
-        // 今回のTokenType.commentは ; comment なので、#はdispatchが適切
-        _addToken(TokenType.dispatch);
       case ';':
         // コメントはトークンとして追加しない
         while (_peek() != '\n' && !_isAtEnd()) {
@@ -134,21 +148,8 @@ class Lexer {
       case ',':
         // 空白文字はスキップ(カンマも空白文字として扱う)
         break;
-      case '"':
-        _string();
-      case ':':
-        _keyword();
-      case '\\':
-        _character();
       default:
-        if (_isDigit(c)) {
-          _number();
-        } else if (_isAlphaOrSymbolStart(c)) {
-          _identifier();
-        } else {
-          // エラー処理: 予期しない文字を報告
-          print('Error: Unexpected character "$c" at $_line:${_column - 1}');
-        }
+        break;
     }
   }
 }
