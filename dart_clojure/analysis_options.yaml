@@ -15,7 +15,7 @@ include: package:lints/recommended.yaml
 # Uncomment the following section to specify additional rules.
 
 formatter:
-  page_width: 110
+  page_width: 90
 # linter:
 #   rules:
 #     -

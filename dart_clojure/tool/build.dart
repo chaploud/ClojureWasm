@@ -1,3 +1,6 @@
+// tool/build.dart
+// Dart Clojureのビルド
+
 import 'dart:io';
 
 Future<void> main(List<String> arguments) async {
