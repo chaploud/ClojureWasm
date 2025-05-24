@@ -1,6 +1,5 @@
 // lib/src/reader/lexer.dart
 
-import 'dart:math' as math;
 import 'token.dart';
 
 const preferInline = pragma("vm:prefer-inline");
@@ -28,7 +27,7 @@ class Lexer {
   int _tokenStartLine = 1;
   int _tokenStartColumn = 1;
 
-  // TODO: エラー報告用のリストやコールバック
+  // エラー報告用のリストやコールバック
   // final List<LexerError> _errors = [];
 
   static final Map<String, TokenType> _reservedWords = {
@@ -123,8 +122,7 @@ class Lexer {
     if (isStartChar) {
       if (_isDigit(char)) return false;
       if (char == ':') return false; // Keywords start with :
-      if (char == '#')
-        return false; // Dispatch chars (except ##Inf etc handled in _number)
+      if (char == '#') return false; // Dispatch chars (except ##Inf, etc...)
     }
     // '/', '.', '+', '-', '*' etc. are allowed.
     return true;
@@ -208,7 +206,7 @@ class Lexer {
           // ここでは不明な文字もシンボルとして扱ってみる (Clojureの寛容性に合わせて)
           // ただし、isClojureSymbolStartCharでfalseになるものは問題
           // より厳密にはエラーとすべき
-          if (!c.trim().isEmpty) {
+          if (c.trim().isNotEmpty) {
             // EOFやその他の内部処理文字でない限り
             // エラーとして不明なトークンを追加することもできる
             // _tokens.add(Token(TokenType.error, c, "Unexpected character", _tokenStartLine, _tokenStartColumn));
@@ -415,9 +413,7 @@ class Lexer {
 
   void _keyword() {
     // _startは ':' の位置、_current は ':' の次の位置
-    bool autoResolve = false;
     if (_peek() == ':') {
-      autoResolve = true;
       _advance(); // 2つ目の ':' を消費
     }
 
@@ -621,13 +617,13 @@ class Lexer {
       numBuffer.write(specialPart);
       final fullSpecial = numBuffer.toString();
 
-      if (fullSpecial == "##Inf")
+      if (fullSpecial == "##Inf") {
         literalValue = double.infinity;
-      else if (fullSpecial == "##-Inf")
+      } else if (fullSpecial == "##-Inf") {
         literalValue = double.negativeInfinity;
-      else if (fullSpecial == "##NaN")
+      } else if (fullSpecial == "##NaN") {
         literalValue = double.nan;
-      else {
+      } else {
         /* エラー: 不明な ## シーケンス */
       }
       _addToken(TokenType.number, literalValue);
@@ -657,8 +653,8 @@ class Lexer {
             // 基数部分の数字を読む
             while (_isAlphaNumeric(_peek())) {
               // 基数に応じた有効文字チェックがより正確
-              String digit = _peek();
-              // TODO: 基数に基づいた文字バリデーション (e.g., 2rなら0,1のみ)
+              _peek();
+              // XXX: 基数に基づいた文字バリデーション (e.g., 2rなら0,1のみ)
               numBuffer.write(_advance());
             }
           } else {
@@ -690,10 +686,8 @@ class Lexer {
         bool isOctal = true;
         // 読み進めながらチェック
         int tempCurrent = _current;
-        String nextChars = "";
         while (_isOctalDigit(_source[tempCurrent])) {
           // 先読みで確認
-          nextChars += _source[tempCurrent];
           tempCurrent++;
           if (tempCurrent >= _source.length) break;
           final charCheck = _source[tempCurrent];
@@ -785,9 +779,9 @@ class Lexer {
           if (_peek() == '/' && _isDigit(_peekNext())) {
             numBuffer.write(_advance()); // '/'
             // 分母の最初の数字
-            if (_isDigit(_peek()))
+            if (_isDigit(_peek())) {
               numBuffer.write(_advance());
-            else {
+            } else {
               /*エラー: /の後に数字なし*/
             }
             while (_isDigit(_peek())) {
@@ -870,10 +864,11 @@ class Lexer {
               break;
             }
           }
-          if (allOctal)
+          if (allOctal) {
             literalValue = BigInt.parse(lexeme.substring(1), radix: 8);
-          else
+          } else {
             literalValue = BigInt.parse(lexeme); // e.g. 09 is decimal 9
+          }
         } else {
           literalValue = BigInt.parse(lexeme); // ClojureはLong/BigInt
         }
