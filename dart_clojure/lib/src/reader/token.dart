@@ -12,12 +12,12 @@
 /// nil: nil
 /// symbol: foo, my-ns/foo, cloure.math/cos
 /// keyword: :foo, :my.ns/bar, ::baz, ::another-ns/qux
-/// deref: @foo
+/// deref: @
 /// dispatch: #{}, #"pattern", #'var, #(), #_ignore
-/// quote: 'foo
-/// syntaxQuote: `foo
-/// unquote: ~foo
-/// unquoteSplicing: ~@foo
+/// quote: '
+/// syntaxQuote: `
+/// unquote: ~
+/// unquoteSplicing: ~@
 /// comment: ; comment
 /// eof: end of file
 enum TokenType {
