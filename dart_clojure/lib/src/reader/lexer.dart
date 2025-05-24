@@ -2,6 +2,8 @@
 
 import 'token.dart';
 
+const EOF = '\x00'; // ソースコードの終端を示す特殊文字
+
 class Lexer {
   final String _source;
   final List<Token> _tokens = [];
@@ -13,9 +15,10 @@ class Lexer {
   // TODO: エラー報告用のリストやコールバック
   // final List<LexerError> _errors = [];
 
+  /// Lexerオブジェクトのコンストラクタ
   Lexer(this._source);
 
-  // ソースコードの終端までトークンをスキャンする
+  /// ソースコードの終端までトークンをスキャンする
   List<Token> scanTokens() {
     while (!_isAtEnd()) {
       _start = _current;
@@ -25,10 +28,10 @@ class Lexer {
     return _tokens;
   }
 
-  // ソースコードの終端に達したかどうかをチェック
+  /// ソースコードの終端に達したかどうかをチェック
   bool _isAtEnd() => _current >= _source.length;
 
-  // 現在の文字を進めて返す
+  /// 現在の文字を進めて返す(消費する)
   String _advance() {
     final char = _source[_current++];
     if (char == '\n') {
@@ -40,17 +43,44 @@ class Lexer {
     return char;
   }
 
-  // トークン追加のヘルパー関数
+  /// トークン追加のヘルパー数
   void _addToken(TokenType type, [Object? literal]) {
     final lexeme = _source.substring(_start, _current);
     _tokens.add(Token(type, lexeme, literal, _line, _column - lexeme.length));
   }
 
-  // 1文字先読み: 文字を確認するが、現在の位置は変えない(消費しない)
-  String _peek() => _isAtEnd() ? '\x00' : _source[_current];
+  /// 1文字先読み: 文字を確認するが、現在の位置は変えない(消費しない)
+  String _peek() => _isAtEnd() ? EOF : _source[_current];
 
-  // 2文字先読み: 文字を確認するが、現在の位置は変えない(消費しない)
-  String _peekNext() => (_current + 1 >= _source.length) ? '\x00' : _source[_current + 1];
+  /// 2文字先読み: 文字を確認するが、現在の位置は変えない(消費しない)
+  String _peekNext() => (_current + 1 >= _source.length) ? EOF : _source[_current + 1];
+
+  /// 次の文字が期待する文字であればそれを消費してtrueを返す
+  /// そうでなければ消費せずにfalseを返す
+  bool _match(String expected) {
+    if (_isAtEnd() || _source[_current] != expected) return false;
+    _advance(); // 期待する文字を消費
+    return true;
+  }
+
+  // 0-9かどうかを
+  bool _isDigit(String c) => c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
+
+  bool _isHexDigit(String c) {
+    return _isDigit(c) ||
+        (c.compareTo('a') >= 0 && c.compareTo('f') <= 0) ||
+        (c.compareTo('A') >= 0 && c.compareTo('F') <= 0);
+  }
+
+  bool _isOctalDigit(String c) {
+    return c.compareTo('0') >= 0 && c.compareTo('7') <= 0;
+  }
+
+  bool _isAlpha(String c) {
+    return (c.compareTo('a') >= 0 && c.compareTo('z') <= 0) ||
+        (c.compareTo('A') >= 0 && c.compareTo('Z') <= 0) ||
+        c == '_'; // アンダースコアは識別子の一部として許可
+  }
 
   // トークン判別ロジック
   void _scanToken() {

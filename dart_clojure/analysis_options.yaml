@@ -16,6 +16,9 @@ include: package:lints/recommended.yaml
 
 formatter:
   page_width: 90
+analyzer:
+  errors:
+    constant_identifier_names: ignore
 # linter:
 #   rules:
 #     -
