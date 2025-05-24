@@ -36,7 +36,7 @@ class Token {
   Token(this.type, this.lexeme, this.literal, this.line, this.column);
 
   @override
-  String toString() => 'Token(${type.name}, "$lexeme", $literal, L$line:C$column)';
+  String toString() => 'Token(${type.name}, "$lexeme", $literal, Ln $line, Col $column)';
 }
 
 // lib/src/reader/tokenizer.dart
@@ -179,10 +179,14 @@ class Tokenizer {
   void _number() {
     // 整数、浮動小数点数、比率 (N/M)、BigInt (N)、16進数 (0x)、8進数 (0)、基数 (2r) を処理
     // これは整数と基本的な浮動小数点数の簡略版
-    while (_isDigit(_peek())) _advance();
+    while (_isDigit(_peek())) {
+      _advance();
+    }
     if (_peek() == '.' && _isDigit(_peekNext())) {
       _advance(); // "." を消費
-      while (_isDigit(_peek())) _advance();
+      while (_isDigit(_peek())) {
+        _advance();
+      }
       _addToken(TokenType.number, double.parse(source.substring(_start, _current)));
     } else if (_peek() == 'N' && (_isAtEndNext() || !_isAlphaNumeric(_peekNext()))) {
       // BigInt
@@ -224,7 +228,9 @@ class Tokenizer {
 
   void _identifierOrSymbol() {
     // シンボル, nil, true, false を処理
-    while (_isAlphaNumeric(_peek()) || _isSymbolSpecialChar(_peek())) _advance();
+    while (_isAlphaNumeric(_peek()) || _isSymbolSpecialChar(_peek())) {
+      _advance();
+    }
     final text = source.substring(_start, _current);
     if (text == "nil") {
       _addToken(TokenType.nil, null); // Clojure nil
