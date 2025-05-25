@@ -2,7 +2,7 @@
 
 import 'token.dart';
 
-const preferInline = pragma("vm:prefer-inline");
+// const preferInline = pragma("vm:prefer-inline");
 const EOF = '\x00'; // ソースコードの終端を示す特殊文字 (内部でのみ使用)
 const ZERO = 48;
 const ONE = 49;
@@ -89,8 +89,6 @@ class Lexer {
     return true;
   }
 
-  // inline推奨
-  @preferInline
   bool _between(String str, int start, int end) {
     if (str.isEmpty) return false; // 空文字チェック
     final code = str.codeUnitAt(0);
