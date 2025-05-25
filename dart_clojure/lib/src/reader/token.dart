@@ -5,19 +5,19 @@
 /// leftParen, rightParen: ()
 /// leftBracket, rightBracket: []
 /// leftBrace, rightBrace: {}
+/// nil: nil
+/// boolean: true, false
 /// string: "", "clojure", "\t \b \n \r \f \' \" \\ \u0041 \101"
 /// number: 12, -12, 0xff, 077, 2r1010, 123N, -0.5, 3.14, 6.02e23, 3.14M, 22/7
 /// character: \a, \u0041, \o12, \newline, \space, \tab, \formfeed, \backspace, \return
-/// boolean: true, false
-/// nil: nil
 /// symbol: foo, my-ns/foo, cloure.math/cos
 /// keyword: :foo, :my.ns/bar, ::baz, ::another-ns/qux
-/// deref: @
-/// dispatch: #{}, #"pattern", #'var, #(), #_ignore
 /// quote: '
 /// syntaxQuote: `
 /// unquote: ~
 /// unquoteSplicing: ~@
+/// deref: @
+/// dispatch: #{}, #"pattern", #'var, #(), #_ignore
 /// comment: ; comment
 /// eof: end of file
 enum TokenType {
